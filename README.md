@@ -1,38 +1,35 @@
-# TraceLab — Render-ready static archive analyzer
+# Mazzi Lab — rebuilt
 
-## Deploy on Render
+This version uses a small Render Docker service instead of trying to make the
+browser guess how to load a WASM archive engine. The container installs 7-Zip,
+which handles ZIP, RAR, 7Z and common compressed formats on the server.
 
-1. Put this repository on GitHub.
-2. In Render, create a new Blueprint and select the repository.
-3. Render reads `render.yaml`.
-4. The service installs the Python dependencies and starts Waitress.
-5. Open the generated Render URL.
+## Deploy
 
-## Safety model
+Push the folder to GitHub and create a Render Blueprint from the repository.
+Render reads `render.yaml` and builds the Dockerfile.
 
-This application is a **static analyzer**. It does not execute uploaded files, scripts, PE files, macros, or binaries.
+## Features
 
-The backend limits upload size, archive entry count, and expanded size. Archive member names are reduced to basenames before being exposed to the application, avoiding normal Zip Slip path traversal.
-
-## Current functionality
-
-- Render-ready Flask backend
-- ZIP upload and inspection
-- File explorer
-- Source/text viewer
+- ZIP / RAR / 7Z / TAR / GZ / BZ2 / XZ
+- Drag and drop
+- File explorer and search
+- Code/text viewer
 - Hex viewer
-- Strings extraction
+- Strings
 - SHA-256
-- Entropy
-- Suspicious-string heuristics
-- JSON report export
-- Health endpoint
-- No execution of samples
+- Shannon entropy
+- Static heuristic indicators
+- JSON report
+- Upload and expanded-size limits
+- Automatic temporary workspace
+- Cleanup when starting a new analysis
+- No uploaded file is executed
 
-## Production hardening
+## Safety
 
-For real malware samples, put the analysis worker in a separate disposable container/VM with no credentials, no host mounts, strict CPU/RAM/time limits, and no outbound network access by default. Store samples only ephemerally and delete them after analysis.
+The server only extracts and reads files. It does not launch extracted programs,
+scripts, macros or binaries. For serious malware research, use a separate
+disposable VM/container with no credentials and restricted networking.
 
-For a real antivirus result, integrate an authorized scanning engine or service. The heuristic scan in this repository must not be presented as an antivirus verdict.
-
-RAR support should be implemented with a sandboxed parser/worker rather than adding an untrusted native extractor directly to the web process.
+The heuristic "hits" are indicators, not an antivirus verdict.
