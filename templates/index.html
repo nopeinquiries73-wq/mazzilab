@@ -38,15 +38,79 @@ function esc(s){return String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;","
 function hex(b){let s="";for(let i=0;i<Math.min(b.length,8192);i+=16){let h="",a="";for(let j=0;j<16;j++){if(i+j<b.length){let x=b[i+j];h+=x.toString(16).padStart(2,"0")+" ";a+=x>=32&&x<127?String.fromCharCode(x):"."}else{h+="   ";a+=" "}}s+=i.toString(16).padStart(8,"0")+"  "+h+" |"+a+"|\\n"}return s}
 function strings(b){let o=[],s="";for(const x of b){if(x>=32&&x<=126)s+=String.fromCharCode(x);else{if(s.length>=4)o.push(s);s=""}}if(s.length>=4)o.push(s);return [...new Set(o)].slice(0,2000).join("\\n")}
 
-async function load(file){
- $("#status").textContent="Uploading and analyzing…";
- const fd=new FormData();fd.append("file",file);
- try{
-  const r=await fetch("/api/upload",{method:"POST",body:fd});
-  const j=await r.json();if(!r.ok)throw new Error(j.error||"Upload failed");
-  session=j.session;files=j.files;$("#landing").hidden=true;$("#workspace").hidden=false;
-  $("#count").textContent=files.length;renderTree();renderOverview(j);
- }catch(e){$("#status").textContent=e.message}
+async function load(file) {
+    const status = document.getElementById("status");
+    status.textContent = "Uploading " + file.name + " (" + formatSize(file.size) + ")...";
+
+    const form = new FormData();
+    form.append("file", file);
+
+    try {
+        const response = await fetch("/api/upload", {
+            method: "POST",
+            body: form
+        });
+
+        // Don't blindly call response.json()
+        const raw = await response.text();
+
+        if (!response.ok) {
+            let message = raw;
+
+            try {
+                const parsed = JSON.parse(raw);
+                message = parsed.error || parsed.message || raw;
+            } catch (_) {
+                // Render may have returned HTML instead of JSON
+            }
+
+            throw new Error(
+                "Server returned HTTP " +
+                response.status +
+                (message ? ": " + message.slice(0, 500) : "")
+            );
+        }
+
+        let data;
+
+        try {
+            data = JSON.parse(raw);
+        } catch (_) {
+            throw new Error(
+                "The server responded, but it wasn't valid JSON. " +
+                "Check the Render logs."
+            );
+        }
+
+        session = data.session;
+        files = data.files || [];
+
+        document.getElementById("landing").hidden = true;
+        document.getElementById("workspace").hidden = false;
+        document.getElementById("count").textContent = files.length;
+
+        renderTree();
+        renderOverview(data);
+
+    } catch (err) {
+        console.error(err);
+
+        status.textContent = "Upload failed: " + err.message;
+
+        // Don't leave the user staring at "Uploading..."
+        document.getElementById("landing").hidden = false;
+        document.getElementById("workspace").hidden = true;
+    }
+}
+
+function formatSize(bytes) {
+    if (bytes < 1024) return bytes + " B";
+    if (bytes < 1024 * 1024)
+        return (bytes / 1024).toFixed(1) + " KB";
+    if (bytes < 1024 * 1024 * 1024)
+        return (bytes / 1024 / 1024).toFixed(1) + " MB";
+
+    return (bytes / 1024 / 1024 / 1024).toFixed(2) + " GB";
 }
 function renderTree(){let q=$("#search").value.toLowerCase();$("#tree").innerHTML="";files.filter(f=>f.name.toLowerCase().includes(q)).forEach(f=>{let d=document.createElement("div");d.className="file";d.dataset.id=f.id;d.innerHTML=(f.text?"◈ ":"▸ ")+esc(f.name);d.onclick=()=>select(f.id);$("#tree").appendChild(d)})}
 function renderOverview(j){$("#stats").innerHTML=`<div><small>ARCHIVE</small><b>${esc(j.name)}</b></div><div><small>FILES</small><b>${files.length}</b></div><div><small>STATUS</small><b class=good>READY</b></div>`;$("#overview").innerHTML="<h2>Archive overview</h2><p>Select a file to inspect its contents, hash, entropy and static indicators.</p>"}
