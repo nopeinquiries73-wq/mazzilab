@@ -28,9 +28,9 @@ button{font-family:inherit}
 <main>
 <div id="upload" class="upload">
 <div class="orb">◈</div><h1>Open an archive</h1>
-<p>Choose a ZIP file to inspect it safely in your browser.</p>
-<label class="button">Choose ZIP<input id="input" type="file" accept=".zip" hidden></label>
-<div id="status"></div>
+<p>Choose a ZIP or RAR file to inspect it safely in your browser.</p>
+<label class="button">Choose ZIP<input id="input" type="file" accept=".zip,.rar" hidden></label>
+<div id="status">ZIP and RAR supported</div>
 </div>
 <div id="work">
 <aside><input id="search" placeholder="Search files"><div id="files"></div></aside>
@@ -41,7 +41,56 @@ button{font-family:inherit}
 </section>
 </div>
 </main>
-<script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
+<script type="module">
+import { ArchiveReader, libarchiveWasm } from "https://cdn.jsdelivr.net/npm/libarchive-wasm@1.2.0/+esm";
+
+const $=x=>document.querySelector(x);
+let files=[], current=null, archiveBytes=null, reader=null, entries=[];
+
+function size(n){return n<1024?n+' B':n<1048576?(n/1024).toFixed(1)+' KB':(n/1048576).toFixed(1)+' MB'}
+function hash(b){return crypto.subtle.digest('SHA-256',b).then(x=>[...new Uint8Array(x)].map(v=>v.toString(16).padStart(2,'0')).join(''))}
+function hex(b){let s='';for(let i=0;i<Math.min(b.length,4096);i+=16){let h='',a='';for(let j=0;j<16;j++){if(i+j<b.length){let x=b[i+j];h+=x.toString(16).padStart(2,'0')+' ';a+=x>=32&&x<127?String.fromCharCode(x):'.'}else{h+='   ';a+=' '}}s+=i.toString(16).padStart(8,'0')+'  '+h+' |'+a+'|\n'}return s}
+function strings(b){let a=[],s='';for(let x of b){if(x>=32&&x<127)s+=String.fromCharCode(x);else{if(s.length>=4)a.push(s);s=''}}if(s.length>=4)a.push(s);return [...new Set(a)].join('\n')}
+
+async function openArchive(f){
+  $('#status').textContent='Opening archive…';
+  try{
+    archiveBytes=new Uint8Array(await f.arrayBuffer());
+    const mod=await libarchiveWasm();
+    reader=new ArchiveReader(mod,archiveBytes);
+    entries=[...reader.entries()];
+    files=entries.filter(e=>e.getSize()!==undefined && !e.isDirectory()).map((e,i)=>({path:e.getPathname(),e,i}));
+    $('#upload').style.display='none';
+    $('#work').style.display='grid';
+    draw();
+    $('#info').innerHTML='<div class=card><small>Archive</small><b>'+f.name+'</b></div><div class=card><small>Files</small><b>'+files.length+'</b></div><div class=card><small>Mode</small><b>Static only</b></div><div class=card><small>Formats</small><b>ZIP + RAR</b></div>';
+  }catch(e){
+    console.error(e);
+    $('#status').textContent='Could not open this archive. It may be damaged, encrypted, or unsupported.';
+  }
+}
+function draw(){let q=$('#search').value.toLowerCase();$('#files').innerHTML='';files.filter(x=>x.path.toLowerCase().includes(q)).forEach((x,i)=>{let d=document.createElement('div');d.className='file';d.textContent='📄 '+x.path;d.onclick=()=>select(i);$('#files').appendChild(d)})}
+async function select(i){
+  current=files[i];
+  let b=new Uint8Array(current.e.readData());
+  $('#name').textContent=current.path;
+  document.querySelectorAll('.file').forEach(x=>x.classList.remove('active'));
+  [...document.querySelectorAll('.file')].find(x=>x.textContent.includes(current.path))?.classList.add('active');
+  let text=new TextDecoder().decode(b),h=await hash(b);
+  $('#info').innerHTML='<div class=card><small>File</small><b>'+current.path+'</b></div><div class=card><small>Size</small><b>'+size(b.length)+'</b></div><div class=card><small>SHA-256</small><b>'+h+'</b></div>';
+  $('#code').textContent=text;
+  $('#hex').textContent=hex(b);
+  $('#strings').textContent=strings(b)||'No printable strings found.';
+}
+$('#input').onchange=e=>e.target.files[0]&&openArchive(e.target.files[0]);
+$('#search').oninput=draw;
+document.querySelectorAll('.tabs button').forEach(b=>b.onclick=()=>{
+  document.querySelectorAll('.tabs button').forEach(x=>x.classList.remove('active'));
+  b.classList.add('active');
+  ['info','code','hex','strings'].forEach(x=>$('#'+x).style.display=x===b.dataset.tab?'block':'none');
+});
+$('#scan').onclick=()=>alert(current?'Static inspection only. Mazzi Lab never executes uploaded files.':'Choose a file first.');
+</script>
 <script>
 const $=x=>document.querySelector(x);let files=[],current=null;
 function size(n){return n<1024?n+' B':n<1048576?(n/1024).toFixed(1)+' KB':(n/1048576).toFixed(1)+' MB'}
