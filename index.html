@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Mazzi Lab</title><link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+<header><div class="brand"><div class="logo">◈</div><div><b>Mazzi Lab</b><small>Archive Analysis Workbench</small></div></div><div class="safe">● STATIC ANALYSIS · NO EXECUTION</div></header>
+<main>
+<section id="landing" class="landing">
+  <div class="heroIcon">◈</div><h1>Inspect. Understand. Analyze.</h1>
+  <p>Upload ZIP, RAR, 7Z or common compressed archives. Mazzi Lab extracts them on the analysis server and never runs their contents.</p>
+  <label class="choose">Choose Archive<input id="pick" type="file" accept=".zip,.rar,.7z,.tar,.gz,.bz2,.xz" hidden></label>
+  <div id="drop" class="drop">or drag an archive here</div><div id="status"></div>
+  <div class="chips"><span>ZIP</span><span>RAR</span><span>7Z</span><span>TAR</span><span>GZ</span><span>BZ2</span><span>XZ</span></div>
+</section>
+
+<section id="workspace" hidden>
+<aside>
+ <div class="sideTitle">ARCHIVE <b id="count">0</b></div>
+ <input id="search" placeholder="Search files…">
+ <div id="tree"></div>
+</aside>
+<section class="content">
+ <div class="toolbar"><div id="crumb" class="crumb">No file selected</div><button id="new" class="btn">New archive</button><button id="report" class="btn">Export report</button></div>
+ <div class="stats" id="stats"></div>
+ <div class="tabs"><button class="active" data-tab="overview">Overview</button><button data-tab="code">Code</button><button data-tab="hex">Hex</button><button data-tab="strings">Strings</button></div>
+ <div id="overview" class="pane active"></div><pre id="code" class="pane"></pre><pre id="hex" class="pane"></pre><pre id="strings" class="pane"></pre>
+</section>
+</section>
+</main>
+<script>
+const $=s=>document.querySelector(s);
+let session=null, files=[], selected=null, current=null;
+
+function fmt(n){return n<1024?n+" B":n<1048576?(n/1024).toFixed(1)+" KB":(n/1048576).toFixed(1)+" MB"}
+function esc(s){return String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]))}
+function hex(b){let s="";for(let i=0;i<Math.min(b.length,8192);i+=16){let h="",a="";for(let j=0;j<16;j++){if(i+j<b.length){let x=b[i+j];h+=x.toString(16).padStart(2,"0")+" ";a+=x>=32&&x<127?String.fromCharCode(x):"."}else{h+="   ";a+=" "}}s+=i.toString(16).padStart(8,"0")+"  "+h+" |"+a+"|\\n"}return s}
+function strings(b){let o=[],s="";for(const x of b){if(x>=32&&x<=126)s+=String.fromCharCode(x);else{if(s.length>=4)o.push(s);s=""}}if(s.length>=4)o.push(s);return [...new Set(o)].slice(0,2000).join("\\n")}
+
+async function load(file){
+ $("#status").textContent="Uploading and analyzing…";
+ const fd=new FormData();fd.append("file",file);
+ try{
+  const r=await fetch("/api/upload",{method:"POST",body:fd});
+  const j=await r.json();if(!r.ok)throw new Error(j.error||"Upload failed");
+  session=j.session;files=j.files;$("#landing").hidden=true;$("#workspace").hidden=false;
+  $("#count").textContent=files.length;renderTree();renderOverview(j);
+ }catch(e){$("#status").textContent=e.message}
+}
+function renderTree(){let q=$("#search").value.toLowerCase();$("#tree").innerHTML="";files.filter(f=>f.name.toLowerCase().includes(q)).forEach(f=>{let d=document.createElement("div");d.className="file";d.dataset.id=f.id;d.innerHTML=(f.text?"◈ ":"▸ ")+esc(f.name);d.onclick=()=>select(f.id);$("#tree").appendChild(d)})}
+function renderOverview(j){$("#stats").innerHTML=`<div><small>ARCHIVE</small><b>${esc(j.name)}</b></div><div><small>FILES</small><b>${files.length}</b></div><div><small>STATUS</small><b class=good>READY</b></div>`;$("#overview").innerHTML="<h2>Archive overview</h2><p>Select a file to inspect its contents, hash, entropy and static indicators.</p>"}
+async function select(id){
+ selected=files.find(x=>x.id===id);if(!selected)return;
+ document.querySelectorAll(".file").forEach(x=>x.classList.toggle("active",+x.dataset.id===id));
+ $("#crumb").textContent=selected.name;
+ const r=await fetch(`/api/file/${session}/${id}`);const j=await r.json();if(!r.ok)return;
+ current=j;const b=Uint8Array.from(atob(j.data),c=>c.charCodeAt(0));const text=new TextDecoder().decode(b);
+ $("#overview").innerHTML=`<div class=cards>
+ <div class=card><small>FILE</small><b>${esc(j.name)}</b></div>
+ <div class=card><small>SIZE</small><b>${fmt(j.size)}</b></div>
+ <div class=card><small>SHA-256</small><b>${j.sha256}</b></div>
+ <div class=card><small>ENTROPY</small><b>${j.entropy}</b></div>
+ <div class=card><small>HEURISTIC HITS</small><b class="${j.hits.length?'warn':'good'}">${j.hits.length?j.hits.join(", "):"None detected"}</b></div>
+ </div>`;
+ $("#code").textContent=text||"[empty file]";
+ $("#hex").textContent=hex(b);
+ $("#strings").textContent=strings(b)||"No printable strings found.";
+}
+$("#pick").onchange=e=>e.target.files[0]&&load(e.target.files[0]);
+$("#drop").ondragover=e=>{e.preventDefault();$("#drop").classList.add("drag")};
+$("#drop").ondragleave=()=>$("#drop").classList.remove("drag");
+$("#drop").ondrop=e=>{e.preventDefault();$("#drop").classList.remove("drag");e.dataTransfer.files[0]&&load(e.dataTransfer.files[0])};
+$("#search").oninput=renderTree;
+document.querySelectorAll(".tabs button").forEach(b=>b.onclick=()=>{document.querySelectorAll(".tabs button").forEach(x=>x.classList.remove("active"));b.classList.add("active");document.querySelectorAll(".pane").forEach(x=>x.classList.remove("active"));$("#"+b.dataset.tab).classList.add("active")});
+$("#new").onclick=async()=>{if(session)await fetch("/api/cleanup/"+session,{method:"POST"});location.reload()};
+$("#report").onclick=()=>{if(!current){alert("Select a file first.");return}const blob=new Blob([JSON.stringify(current,null,2)],{type:"application/json"}),a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download="mazzi-lab-report.json";a.click();URL.revokeObjectURL(a.href)};
+</script>
+</body></html>
