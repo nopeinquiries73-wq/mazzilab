@@ -5,104 +5,131 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Mazzi Lab</title>
 <style>
-*{box-sizing:border-box}body{margin:0;background:#08060d;color:#eeeafa;font-family:Arial,sans-serif}
-header{height:60px;padding:0 20px;border-bottom:1px solid #292039;background:#0d0915;display:flex;align-items:center;justify-content:space-between}
-header b{color:#b78cff;font-size:21px}header span{font:11px monospace;color:#b99bff}
-main{height:calc(100vh - 60px);padding:24px}.upload{height:100%;border:1px dashed #59427e;border-radius:14px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;background:radial-gradient(circle,#211332,#09070e 58%)}
-.upload h1{font-size:30px;margin:8px}.upload p{color:#9b91aa}.orb{font-size:48px;color:#b78cff;text-shadow:0 0 25px #8b5cf6}
-.button{display:inline-block;padding:11px 18px;border-radius:7px;border:1px solid #704db0;background:#24153b;color:#dfcfff;cursor:pointer}
-#status{margin-top:15px;color:#8e849c}
-#work{display:none;height:100%;grid-template-columns:260px 1fr;border:1px solid #292039;border-radius:12px;overflow:hidden}
-aside{background:#0c0912;border-right:1px solid #292039;padding:12px;overflow:auto}aside input{width:100%;padding:9px;background:#120e19;border:1px solid #33274a;color:#fff;border-radius:6px;margin-bottom:10px}
-.file{padding:8px;border-radius:5px;cursor:pointer;font:12px monospace;color:#bbb1c9}.file:hover,.file.active{background:#211632;color:#cdaeff}
-section{min-width:0}.bar{height:55px;padding:10px 14px;border-bottom:1px solid #292039;display:flex;align-items:center;justify-content:space-between}
-.tabs{display:flex;border-bottom:1px solid #292039}.tabs button{background:none;border:0;color:#81758e;padding:12px 16px;cursor:pointer}.tabs button.active{color:#bf96ff;border-bottom:2px solid #9b6cff}
-.view{height:calc(100% - 96px);overflow:auto;padding:18px;white-space:pre-wrap;font:12px/1.5 Consolas,monospace;background:#08060c}
-.card{display:inline-block;vertical-align:top;background:#100b18;border:1px solid #302344;border-radius:8px;padding:15px;margin:0 8px 8px 0;min-width:180px}.card small{display:block;color:#83758f}.card b{display:block;margin-top:7px;word-break:break-all;color:#e8dcff}
-button{font-family:inherit}
-@media(max-width:750px){#work{grid-template-columns:210px}.upload{padding:20px}}
+:root{--bg:#07050b;--panel:#0d0914;--panel2:#110c19;--line:#2c2040;--purple:#a970ff;--purple2:#6d35c9;--text:#eee8f7;--muted:#887c99}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font-family:Inter,Arial,sans-serif;overflow:hidden}
+header{height:62px;background:linear-gradient(90deg,#0d0914,#130b20,#0d0914);border-bottom:1px solid var(--line);display:flex;align-items:center;padding:0 18px;gap:14px}
+.logo{width:35px;height:35px;border-radius:10px;display:grid;place-items:center;background:#24123e;color:#d3b3ff;box-shadow:0 0 24px #7136bd55;font-size:20px}.brand b{font-size:18px}.brand small{display:block;color:var(--muted);font-size:10px;margin-top:2px}.safe{margin-left:auto;color:#79e2ad;font:10px monospace;border:1px solid #24543e;padding:7px 9px;border-radius:20px;background:#09140e}
+main{height:calc(100vh - 62px);padding:18px}.drop{height:100%;border:1px dashed #563b77;border-radius:16px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;background:radial-gradient(circle at 50% 35%,#211033 0,#0a0710 52%);transition:.2s}.drop.drag{border-color:var(--purple);box-shadow:inset 0 0 70px #7c3aed22}.glyph{font-size:46px;color:#c19aff;text-shadow:0 0 35px #8b5cf6}.drop h1{margin:10px 0 5px;font-size:30px}.drop p{color:var(--muted);max-width:500px}.button{border:1px solid #67429a;background:#1c102d;color:#e8d8ff;padding:10px 14px;border-radius:8px;cursor:pointer}.button:hover{border-color:var(--purple);box-shadow:0 0 18px #8b5cf633}.drop .button{margin-top:12px}.formats{font:10px monospace;color:#6f647b;margin-top:14px}
+#work{display:none;height:100%;grid-template-columns:260px minmax(0,1fr);border:1px solid var(--line);border-radius:14px;overflow:hidden;background:var(--panel)}
+aside{background:#0a0710;border-right:1px solid var(--line);overflow:auto}.sidehead{height:48px;padding:15px;color:#81758d;font:10px monospace;display:flex;justify-content:space-between}.search{margin:0 11px 11px;width:calc(100% - 22px);padding:9px;background:#100b17;border:1px solid #33264a;color:white;border-radius:7px}.file{padding:7px 12px;font:11px monospace;color:#a99db7;cursor:pointer;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.file:hover,.file.active{background:#1b1129;color:#c79cff;border-left:2px solid var(--purple)}
+section{min-width:0}.toolbar{height:55px;border-bottom:1px solid var(--line);display:flex;align-items:center;padding:9px 12px;gap:8px}.path{margin-right:auto;color:#a99db7;font:11px monospace;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.toolbar .button{font-size:11px}.tabs{height:41px;border-bottom:1px solid var(--line);display:flex}.tabs button{background:none;border:0;color:#766b82;padding:0 14px;cursor:pointer}.tabs button.active{color:#c99cff;border-bottom:2px solid var(--purple)}.view{display:none;height:calc(100vh - 158px);overflow:auto;padding:18px;background:#08060c;font:12px/1.55 Consolas,monospace;white-space:pre-wrap}.view.active{display:block}.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:10px}.card{background:linear-gradient(145deg,#120b1a,#0d0913);border:1px solid #2d2140;border-radius:10px;padding:14px}.card small{display:block;color:#776a83;text-transform:uppercase;font-size:9px;letter-spacing:.08em}.card b{display:block;margin-top:7px;word-break:break-word;color:#e8dcf5}.good{color:#7de2ad!important}.warn{color:#ffd27a!important}.bad{color:#ff8f9b!important}.line{padding:2px 0}.line:hover{background:#120d1a}.empty{color:#62586b}
+@media(max-width:760px){#work{grid-template-columns:200px}.safe{display:none}}
 </style>
 </head>
 <body>
-<header><b>◈ Mazzi Lab</b><span>STATIC MODE · NO EXECUTION</span></header>
+<header>
+<div class="logo">◈</div><div class="brand"><b>Mazzi Lab</b><small>Archive Analysis Workbench</small></div>
+<div class="safe">● LOCAL / STATIC / NO EXECUTION</div>
+</header>
 <main>
-<div id="upload" class="upload">
-<div class="orb">◈</div><h1>Open an archive</h1>
-<p>Choose a ZIP or RAR file to inspect it safely in your browser.</p>
-<label class="button">Choose ZIP<input id="input" type="file" accept=".zip,.rar" hidden></label>
-<div id="status">ZIP and RAR supported</div>
+<div id="drop" class="drop">
+<div class="glyph">◈</div><h1>Drop an archive</h1>
+<p>Inspect ZIP, RAR, 7Z and other supported archives directly in the browser. Nothing inside the archive is executed.</p>
+<label class="button">Choose Archive<input id="input" type="file" accept=".zip,.rar,.7z,.tar,.gz,.bz2,.xz" hidden></label>
+<div id="status"></div><div class="formats">ZIP · RAR4 · RAR5 · 7Z · TAR · GZIP · BZIP2 · XZ</div>
 </div>
+
 <div id="work">
-<aside><input id="search" placeholder="Search files"><div id="files"></div></aside>
+<aside><div class="sidehead"><span>ARCHIVE FILES</span><b id="count">0</b></div><input id="search" class="search" placeholder="Search files…"><div id="files"></div></aside>
 <section>
-<div class="bar"><span id="name">Select a file</span><button class="button" id="scan">Static Scan</button></div>
-<div class="tabs"><button class="active" data-tab="info">Info</button><button data-tab="code">Code</button><button data-tab="hex">Hex</button><button data-tab="strings">Strings</button></div>
-<div id="info" class="view"></div><div id="code" class="view" style="display:none"></div><div id="hex" class="view" style="display:none"></div><div id="strings" class="view" style="display:none"></div>
+<div class="toolbar"><span id="path" class="path">No file selected</span><button id="openAgain" class="button">Open another</button><button id="scan" class="button">Analyze</button><button id="export" class="button">Report</button></div>
+<div class="tabs"><button class="active" data-tab="info">Overview</button><button data-tab="code">Code</button><button data-tab="hex">Hex</button><button data-tab="strings">Strings</button></div>
+<div id="info" class="view active"></div><pre id="code" class="view"></pre><pre id="hex" class="view"></pre><pre id="strings" class="view"></pre>
 </section>
 </div>
 </main>
-<script type="module">
-import { ArchiveReader, libarchiveWasm } from "https://cdn.jsdelivr.net/npm/libarchive-wasm@1.2.0/+esm";
 
-const $=x=>document.querySelector(x);
-let files=[], current=null, archiveBytes=null, reader=null, entries=[];
-
-function size(n){return n<1024?n+' B':n<1048576?(n/1024).toFixed(1)+' KB':(n/1048576).toFixed(1)+' MB'}
-function hash(b){return crypto.subtle.digest('SHA-256',b).then(x=>[...new Uint8Array(x)].map(v=>v.toString(16).padStart(2,'0')).join(''))}
-function hex(b){let s='';for(let i=0;i<Math.min(b.length,4096);i+=16){let h='',a='';for(let j=0;j<16;j++){if(i+j<b.length){let x=b[i+j];h+=x.toString(16).padStart(2,'0')+' ';a+=x>=32&&x<127?String.fromCharCode(x):'.'}else{h+='   ';a+=' '}}s+=i.toString(16).padStart(8,'0')+'  '+h+' |'+a+'|\n'}return s}
-function strings(b){let a=[],s='';for(let x of b){if(x>=32&&x<127)s+=String.fromCharCode(x);else{if(s.length>=4)a.push(s);s=''}}if(s.length>=4)a.push(s);return [...new Set(a)].join('\n')}
-
-async function openArchive(f){
-  $('#status').textContent='Opening archive…';
-  try{
-    archiveBytes=new Uint8Array(await f.arrayBuffer());
-    const mod=await libarchiveWasm();
-    reader=new ArchiveReader(mod,archiveBytes);
-    entries=[...reader.entries()];
-    files=entries.filter(e=>e.getSize()!==undefined && !e.isDirectory()).map((e,i)=>({path:e.getPathname(),e,i}));
-    $('#upload').style.display='none';
-    $('#work').style.display='grid';
-    draw();
-    $('#info').innerHTML='<div class=card><small>Archive</small><b>'+f.name+'</b></div><div class=card><small>Files</small><b>'+files.length+'</b></div><div class=card><small>Mode</small><b>Static only</b></div><div class=card><small>Formats</small><b>ZIP + RAR</b></div>';
-  }catch(e){
-    console.error(e);
-    $('#status').textContent='Could not open this archive. It may be damaged, encrypted, or unsupported.';
-  }
-}
-function draw(){let q=$('#search').value.toLowerCase();$('#files').innerHTML='';files.filter(x=>x.path.toLowerCase().includes(q)).forEach((x,i)=>{let d=document.createElement('div');d.className='file';d.textContent='📄 '+x.path;d.onclick=()=>select(i);$('#files').appendChild(d)})}
-async function select(i){
-  current=files[i];
-  let b=new Uint8Array(current.e.readData());
-  $('#name').textContent=current.path;
-  document.querySelectorAll('.file').forEach(x=>x.classList.remove('active'));
-  [...document.querySelectorAll('.file')].find(x=>x.textContent.includes(current.path))?.classList.add('active');
-  let text=new TextDecoder().decode(b),h=await hash(b);
-  $('#info').innerHTML='<div class=card><small>File</small><b>'+current.path+'</b></div><div class=card><small>Size</small><b>'+size(b.length)+'</b></div><div class=card><small>SHA-256</small><b>'+h+'</b></div>';
-  $('#code').textContent=text;
-  $('#hex').textContent=hex(b);
-  $('#strings').textContent=strings(b)||'No printable strings found.';
-}
-$('#input').onchange=e=>e.target.files[0]&&openArchive(e.target.files[0]);
-$('#search').oninput=draw;
-document.querySelectorAll('.tabs button').forEach(b=>b.onclick=()=>{
-  document.querySelectorAll('.tabs button').forEach(x=>x.classList.remove('active'));
-  b.classList.add('active');
-  ['info','code','hex','strings'].forEach(x=>$('#'+x).style.display=x===b.dataset.tab?'block':'none');
-});
-$('#scan').onclick=()=>alert(current?'Static inspection only. Mazzi Lab never executes uploaded files.':'Choose a file first.');
-</script>
+<script src="https://unpkg.com/filing/dist/umd/filing.min.js"></script>
 <script>
-const $=x=>document.querySelector(x);let files=[],current=null;
-function size(n){return n<1024?n+' B':n<1048576?(n/1024).toFixed(1)+' KB':(n/1048576).toFixed(1)+' MB'}
-function hash(b){return crypto.subtle.digest('SHA-256',b).then(x=>[...new Uint8Array(x)].map(v=>v.toString(16).padStart(2,'0')).join(''))}
-function hex(b){let s='';for(let i=0;i<Math.min(b.length,4096);i+=16){let h='',a='';for(let j=0;j<16;j++){if(i+j<b.length){let x=b[i+j];h+=x.toString(16).padStart(2,'0')+' ';a+=x>=32&&x<127?String.fromCharCode(x):'.'}else{h+='   ';a+=' '}}s+=i.toString(16).padStart(8,'0')+'  '+h+' |'+a+'|\\n'}return s}
-function strings(b){let a=[],s='';for(let x of b){if(x>=32&&x<127)s+=String.fromCharCode(x);else{if(s.length>=4)a.push(s);s=''}}if(s.length>=4)a.push(s);return [...new Set(a)].join('\\n')}
-async function openZip(f){$('#status').textContent='Opening…';try{let z=await JSZip.loadAsync(await f.arrayBuffer());files=[];z.forEach((path,e)=>{if(!e.dir)files.push({path,e})});$('#upload').style.display='none';$('#work').style.display='grid';draw();$('#info').innerHTML='<div class=card><small>Archive</small><b>'+f.name+'</b></div><div class=card><small>Files</small><b>'+files.length+'</b></div><div class=card><small>Mode</small><b>Static only</b></div>'}catch(e){$('#status').textContent='Could not open this ZIP. Try another ZIP file.'}}
-function draw(){let q=$('#search').value.toLowerCase();$('#files').innerHTML='';files.filter(x=>x.path.toLowerCase().includes(q)).forEach((x,i)=>{let d=document.createElement('div');d.className='file';d.textContent='📄 '+x.path;d.onclick=()=>select(i);$('#files').appendChild(d)})}
-async function select(i){current=files[i];let b=await current.e.async('uint8array');$('#name').textContent=current.path;document.querySelectorAll('.file').forEach(x=>x.classList.remove('active'));[...document.querySelectorAll('.file')].find(x=>x.textContent.includes(current.path))?.classList.add('active');let text=new TextDecoder().decode(b),h=await hash(b);$('#info').innerHTML='<div class=card><small>File</small><b>'+current.path+'</b></div><div class=card><small>Size</small><b>'+size(b.length)+'</b></div><div class=card><small>SHA-256</small><b>'+h+'</b></div>';$('#code').textContent=text;$('#hex').textContent=hex(b);$('#strings').textContent=strings(b)||'No printable strings found.'}
-$('#input').onchange=e=>e.target.files[0]&&openZip(e.target.files[0]);$('#search').oninput=draw;
-document.querySelectorAll('.tabs button').forEach(b=>b.onclick=()=>{document.querySelectorAll('.tabs button').forEach(x=>x.classList.remove('active'));b.classList.add('active');['info','code','hex','strings'].forEach(x=>$('#'+x).style.display=x===b.dataset.tab?'block':'none')});
-$('#scan').onclick=()=>alert(current?'Static inspection only. Mazzi Lab never executes uploaded files.':'Choose a file first.');
+const $=s=>document.querySelector(s);
+let archiveFiles=[],selected=null,report=null;
+
+const suspicious=[
+ /powershell/i,/cmd\\.exe/i,/wscript/i,/cscript/i,/rundll32/i,/regsvr32/i,
+ /schtasks/i,/currentversion\\\\run/i,/invoke-expression/i,/downloadstring/i,
+ /frombase64string/i,/CreateRemoteThread/i,/VirtualAlloc/i,/WriteProcessMemory/i
+];
+
+function fmt(n){return n<1024?n+" B":n<1048576?(n/1024).toFixed(1)+" KB":(n/1048576).toFixed(1)+" MB"}
+function esc(s){return String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]))}
+async function sha(b){return [...new Uint8Array(await crypto.subtle.digest("SHA-256",b))].map(x=>x.toString(16).padStart(2,"0")).join("")}
+function entropy(b){if(!b.length)return 0;let c=new Array(256).fill(0);for(let x of b)c[x]++;return -c.reduce((s,n)=>{if(!n)return s;let p=n/b.length;return s-p*Math.log2(p)},0)}
+function hexdump(b){let s="";for(let i=0;i<Math.min(b.length,8192);i+=16){let h="",a="";for(let j=0;j<16;j++){if(i+j<b.length){let x=b[i+j];h+=x.toString(16).padStart(2,"0")+" ";a+=x>=32&&x<127?String.fromCharCode(x):"."}else{h+="   ";a+=" "}}s+=i.toString(16).padStart(8,"0")+"  "+h+" |"+a+"|\\n"}return s}
+function extractStrings(b){let out=[],s="";for(let x of b){if(x>=32&&x<127)s+=String.fromCharCode(x);else{if(s.length>=4)out.push(s);s=""}}if(s.length>=4)out.push(s);return [...new Set(out)].slice(0,2000).join("\\n")}
+
+async function openArchive(file){
+ $("#status").textContent="Loading archive engine…";
+ try{
+  if(!window.filing)throw new Error("Archive engine failed to load");
+  const filing=new window.filing.FilingBrowser({wasmUrl:"https://unpkg.com/filing/dist/esm/wasm/archive.wasm"});
+  $("#status").textContent="Reading "+file.name+"…";
+  const extracted=await filing.extract(file);
+  archiveFiles=extracted.map((x,i)=>({name:x.pathname||x.filename,data:x.data,type:x.type||"application/octet-stream",index:i}));
+  if(!archiveFiles.length)throw new Error("Archive contains no readable files");
+  $("#drop").style.display="none";$("#work").style.display="grid";$("#count").textContent=archiveFiles.length;
+  renderFiles();renderArchiveOverview(file);
+ }catch(e){
+  console.error(e);
+  $("#status").textContent="Could not read this archive: "+(e.message||"unsupported/damaged archive");
+ }
+}
+
+function renderFiles(){
+ const q=$("#search").value.toLowerCase();
+ $("#files").innerHTML="";
+ archiveFiles.filter(f=>f.name.toLowerCase().includes(q)).forEach((f,i)=>{
+  const d=document.createElement("div");d.className="file";d.textContent="▸ "+f.name;d.onclick=()=>selectFile(i);$("#files").appendChild(d);
+ });
+}
+function renderArchiveOverview(file){
+ $("#info").innerHTML=`<div class="cards">
+ <div class="card"><small>Archive</small><b>${esc(file.name)}</b></div>
+ <div class="card"><small>Archive size</small><b>${fmt(file.size)}</b></div>
+ <div class="card"><small>Entries</small><b>${archiveFiles.length}</b></div>
+ <div class="card"><small>Mode</small><b class="good">Static / No Execute</b></div>
+ </div>
+ <p class="empty">Select a file on the left to inspect its bytes, code, strings and hash.</p>`;
+}
+
+async function selectFile(i){
+ selected=archiveFiles[i];
+ document.querySelectorAll(".file").forEach(x=>x.classList.remove("active"));
+ [...document.querySelectorAll(".file")].find(x=>x.textContent.includes(selected.name))?.classList.add("active");
+ const b=new Uint8Array(selected.data);const h=await sha(b);const text=new TextDecoder().decode(b);
+ const hits=suspicious.filter(r=>r.test(text)).map(r=>r.source);
+ $("#path").textContent=selected.name;
+ $("#info").innerHTML=`<div class="cards">
+ <div class="card"><small>File</small><b>${esc(selected.name)}</b></div>
+ <div class="card"><small>Size</small><b>${fmt(b.length)}</b></div>
+ <div class="card"><small>SHA-256</small><b>${h}</b></div>
+ <div class="card"><small>Entropy</small><b>${entropy(b).toFixed(3)}</b></div>
+ <div class="card"><small>Suspicious patterns</small><b class="${hits.length?'warn':'good'}">${hits.length?hits.length+" match(es)":"None detected"}</b></div>
+ </div>
+ <p class="empty">${selected.type}</p>`;
+ $("#code").textContent=text||"[empty file]";
+ $("#hex").textContent=hexdump(b);
+ $("#strings").textContent=extractStrings(b)||"No printable strings found.";
+ report={name:selected.name,size:b.length,sha256:h,entropy:entropy(b),suspicious:hits};
+}
+
+$("#input").onchange=e=>e.target.files[0]&&openArchive(e.target.files[0]);
+$("#openAgain").onclick=()=>{$("#input").value="";$("#input").click()};
+$("#search").oninput=renderFiles;
+document.querySelectorAll(".tabs button").forEach(btn=>btn.onclick=()=>{
+ document.querySelectorAll(".tabs button").forEach(x=>x.classList.remove("active"));btn.classList.add("active");
+ document.querySelectorAll(".view").forEach(x=>x.classList.remove("active"));$("#"+btn.dataset.tab).classList.add("active");
+});
+$("#scan").onclick=()=>{
+ if(!selected){alert("Select a file first.");return}
+ alert("Static analysis complete.\\n\\nMazzi Lab never executes archive contents.\\n\\nSee Overview for hash, entropy and heuristic matches.");
+};
+$("#export").onclick=()=>{
+ if(!report){alert("Select a file first.");return}
+ const blob=new Blob([JSON.stringify(report,null,2)],{type:"application/json"}),a=document.createElement("a");
+ a.href=URL.createObjectURL(blob);a.download="mazzi-lab-report.json";a.click();URL.revokeObjectURL(a.href);
+};
+const drop=$("#drop");["dragenter","dragover"].forEach(e=>drop.addEventListener(e,x=>{x.preventDefault();drop.classList.add("drag")}));
+["dragleave","drop"].forEach(e=>drop.addEventListener(e,x=>{x.preventDefault();drop.classList.remove("drag")}));
+drop.addEventListener("drop",e=>e.dataTransfer.files[0]&&openArchive(e.dataTransfer.files[0]));
 </script>
-</body>
-</html>
+</body></html>
